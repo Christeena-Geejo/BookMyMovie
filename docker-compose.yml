@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: bmm_postgres
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=bookmymovie
+      - POSTGRES_USER=bmm_user
+      - POSTGRES_PASSWORD=secure_db_password
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    container_name: bmm_redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  backend:
+    build: ./backend
+    container_name: bmm_backend
+    restart: always
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             gunicorn bookmymovie.wsgi:application --bind 0.0.0.0:8000 --workers 3"
+    volumes:
+      - ./backend:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    environment:
+      - DEBUG=False
+      - SECRET_KEY=your_production_secret_key
+      - DATABASE_URL=postgres://bmm_user:secure_db_password@db:5432/bookmymovie
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=django-db
+      - EMAIL_HOST_USER=your_email@gmail.com
+      - EMAIL_HOST_PASSWORD=your_gmail_app_password
+      - RAZORPAY_KEY_ID=your_razorpay_key_id
+      - RAZORPAY_KEY_SECRET=your_razorpay_key_secret
+    depends_on:
+      - db
+      - redis
+
+  celery:
+    build: ./backend
+    container_name: bmm_celery
+    restart: always
+    command: celery -A bookmymovie worker --loglevel=info -P solo
+    volumes:
+      - ./backend:/app
+    environment:
+      - DATABASE_URL=postgres://bmm_user:secure_db_password@db:5432/bookmymovie
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=django-db
+    depends_on:
+      - redis
+      - db
+
+  frontend:
+    build: ./frontend
+    container_name: bmm_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:

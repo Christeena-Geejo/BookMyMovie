@@ -1,0 +1,15 @@
+[Unit]
+Description=Celery Worker Daemon for BookMyMovie
+After=network.target redis-server.service
+
+[Service]
+Type=simple
+User=ubuntu
+Group=www-data
+WorkingDirectory=/var/www/bookmymovie/backend
+EnvironmentFile=/var/www/bookmymovie/backend/.env
+ExecStart=/var/www/bookmymovie/backend/.venv/bin/celery -A bookmymovie worker --loglevel=info -P solo
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

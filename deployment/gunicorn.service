@@ -1,0 +1,16 @@
+[Unit]
+Description=gunicorn daemon for bookmymovie
+After=network.target
+
+[Service]
+User=ubuntu
+Group=www-data
+WorkingDirectory=/var/www/bookmymovie/backend
+ExecStart=/var/www/bookmymovie/backend/.venv/bin/gunicorn \
+          --access-logfile - \
+          --workers 3 \
+          --bind unix:/run/gunicorn.sock \
+          bookmymovie.wsgi:application
+
+[Install]
+WantedBy=multi-user.target

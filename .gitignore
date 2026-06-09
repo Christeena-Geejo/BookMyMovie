@@ -1,0 +1,50 @@
+# Environments & Secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+secrets.json
+
+# Python Virtual Environments & Packages
+.venv/
+venv/
+ENV/
+env/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Python Caches & Compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+
+# Databases (Local SQLite files)
+*.sqlite
+*.sqlite3
+db.sqlite3
+celery_broker.sqlite
+
+# Node Dependencies & Build outputs (React)
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+.eslintcache
+
+# Media & Temp files
+*.pdf
+media/
+backend/media/
+staticfiles/
+backend/staticfiles/
+
+# IDEs & System files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "services": {
+    "web": {
+      "name": "backend",
+      "watchPatterns": ["backend/**"],
+      "build": {
+        "builder": "NIXPACKS",
+        "rootDirectory": "backend"
+      },
+      "deploy": {
+        "startCommand": "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn bookmymovie.wsgi:application --bind 0.0.0.0:$PORT"
+      }
+    },
+    "celery": {
+      "name": "celery-worker",
+      "watchPatterns": ["backend/**"],
+      "build": {
+        "builder": "NIXPACKS",
+        "rootDirectory": "backend"
+      },
+      "deploy": {
+        "startCommand": "celery -A bookmymovie worker --loglevel=info -P solo"
+      }
+    }
+  }
+}

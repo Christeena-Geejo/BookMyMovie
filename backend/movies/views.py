@@ -158,7 +158,8 @@ class OrganizerDashboardDataView(views.APIView):
     permission_classes = (IsCinemaManager,)
 
     def get(self, request):
-        movies = Movie.objects.filter(submitted_by=request.user).order_by('-id')
+        from django.db.models import Q
+        movies = Movie.objects.filter(Q(submitted_by=request.user) | Q(approval_status='APPROVED')).order_by('-id').distinct()
         shows = Show.objects.filter(submitted_by=request.user).order_by('-id')
         cinemas = Cinema.objects.filter(submitted_by=request.user).order_by('-id')
         screens = Screen.objects.filter(submitted_by=request.user).order_by('-id')

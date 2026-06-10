@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, API_BASE_URL } from './context/AuthContext';
 import Header from './components/Header';
 import Home from './pages/Home';
 import MovieDetail from './pages/MovieDetail';
@@ -42,7 +42,7 @@ const AppContent = () => {
     // Fetch locations from backend
     const fetchLocations = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL || window.location.protocol + '//' + window.location.hostname + ':8000'}/api/locations/`);
+        const res = await fetch(`${API_BASE_URL}/api/locations/`);
         const data = await res.json();
         // Convert to array of strings since Home and Header expect strings
         if (Array.isArray(data)) {

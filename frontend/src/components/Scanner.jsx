@@ -2,7 +2,11 @@ import React, { useEffect, useRef } from 'react';
 import { Html5QrcodeScanner, Html5Qrcode } from 'html5-qrcode';
 
 const Scanner = ({ onScanSuccess }) => {
-  const scannerRef = useRef(null);
+  const onScanSuccessRef = useRef(onScanSuccess);
+
+  useEffect(() => {
+    onScanSuccessRef.current = onScanSuccess;
+  }, [onScanSuccess]);
 
   useEffect(() => {
     // Create the scanner instance
@@ -16,7 +20,7 @@ const Scanner = ({ onScanSuccess }) => {
       // Pause scanner to prevent multiple rapid scans
       html5QrcodeScanner.pause();
       
-      onScanSuccess(decodedText, () => {
+      onScanSuccessRef.current(decodedText, () => {
         // Callback to resume scanning if needed
         html5QrcodeScanner.resume();
       });
@@ -34,7 +38,7 @@ const Scanner = ({ onScanSuccess }) => {
         console.error("Failed to clear html5QrcodeScanner. ", err);
       }
     };
-  }, [onScanSuccess]);
+  }, []);
 
   return (
     <div style={{ width: '100%', maxWidth: '500px', margin: '0 auto', background: '#fff', borderRadius: '12px', overflow: 'hidden' }}>

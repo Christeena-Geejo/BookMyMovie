@@ -101,6 +101,13 @@ def create_show_seats(sender, instance, created, **kwargs):
     screen = instance.screen
     templates = SeatTemplate.objects.filter(screen=screen)
     
+    def get_price_for_type(seat_type):
+        if seat_type == 'VIP':
+            return instance.price_vip
+        elif seat_type == 'PREMIUM':
+            return instance.price_premium
+        return instance.price_standard
+
     if templates.exists():
         # Use existing templates
         show_seats = []
@@ -110,8 +117,8 @@ def create_show_seats(sender, instance, created, **kwargs):
                     show=instance,
                     row_name=t.row_name,
                     column_number=t.column_number,
-                    seat_type='STANDARD',
-                    price=Decimal('100.00'),
+                    seat_type=t.seat_type,
+                    price=get_price_for_type(t.seat_type),
                     status='AVAILABLE'
                 )
             )
@@ -124,14 +131,24 @@ def create_show_seats(sender, instance, created, **kwargs):
         
         for r in range(1, rows + 1):
             row_name = chr(64 + r)  # A, B, C...
+            # Default basic logic: last 2 rows VIP, next 3 Premium, rest Standard
+            if rows >= 5 and r >= rows - 1:
+                seat_type = 'VIP'
+            elif rows >= 5 and r >= rows - 4:
+                seat_type = 'PREMIUM'
+            else:
+                seat_type = 'STANDARD'
+                
+            price = get_price_for_type(seat_type)
+            
             for c in range(1, cols + 1):
                 show_seats.append(
                     ShowSeat(
                         show=instance,
                         row_name=row_name,
                         column_number=c,
-                        seat_type='STANDARD',
-                        price=Decimal('100.00'),
+                        seat_type=seat_type,
+                        price=price,
                         status='AVAILABLE'
                     )
                 )

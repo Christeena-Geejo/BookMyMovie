@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../context/AuthContext';
 import { CheckCircle2, XCircle, AlertCircle, Calendar, Clock, MapPin, Film, ArrowLeft } from 'lucide-react';
 
-const TicketVerify = ({ bookingCode, setView }) => {
+const TicketVerify = ({ bookingCode, onClose, closeText = "Go to Home Page" }) => {
   const [status, setStatus] = useState('loading'); // 'loading', 'success', 'error'
   const [errorType, setErrorType] = useState(''); // 'ALREADY_SCANNED', 'DATE_MISMATCH', 'UNPAID', 'INVALID', 'ERROR'
   const [errorMessage, setErrorMessage] = useState('');
@@ -230,16 +230,12 @@ const TicketVerify = ({ bookingCode, setView }) => {
 
         {/* Footer Actions */}
         <button 
-          onClick={() => {
-            // Clean URL path
-            window.history.pushState({}, '', '/');
-            setView('home');
-          }}
+          onClick={onClose}
           className="btn-primary"
           style={{ width: '100%', justifyContent: 'center', gap: '0.5rem', padding: '0.85rem' }}
         >
           <ArrowLeft size={16} />
-          <span>Go to Home Page</span>
+          <span>{closeText}</span>
         </button>
       </div>
     </div>

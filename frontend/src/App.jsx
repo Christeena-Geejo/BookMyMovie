@@ -132,7 +132,10 @@ const AppContent = () => {
         return (
           <TicketVerify
             bookingCode={verifyBookingCode}
-            setView={setView}
+            onClose={() => {
+              window.history.pushState({}, '', '/');
+              setView('home');
+            }}
           />
         );
 

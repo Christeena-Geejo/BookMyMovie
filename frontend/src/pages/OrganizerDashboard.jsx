@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useAuth, API_BASE_URL } from '../context/AuthContext';
 import { 
   ArrowLeft, PlusCircle, LayoutGrid, CalendarRange, CheckCircle2, Clock, 
-  XCircle, Film, Monitor, Building, Layers, MapPin 
+  XCircle, Film, Monitor, Building, Layers, MapPin, ScanLine 
 } from 'lucide-react';
+import Scanner from '../components/Scanner';
+import TicketVerify from './TicketVerify';
 
 const OrganizerDashboard = ({ setView }) => {
   const { authFetch } = useAuth();
@@ -46,25 +48,29 @@ const OrganizerDashboard = ({ setView }) => {
   const [pricePrem, setPricePrem] = useState('250.00');
   const [priceVip, setPriceVip] = useState('400.00');
   
+  // Scanner states
+  const [scannedBookingCode, setScannedBookingCode] = useState(null);
+
   const [msg, setMsg] = useState({ text: '', type: '' }); // type: 'success' | 'error'
   const [submitting, setSubmitting] = useState(false);
 
   const fetchDashboardData = async (showLoader = true) => {
     if (showLoader) setLoading(true);
     try {
-      const res = await authFetch(`${API_BASE_URL}/api/organizer/dashboard/`);
+      const t = new Date().getTime();
+      const res = await authFetch(`${API_BASE_URL}/api/organizer/dashboard/?_t=${t}`);
       const data = await res.json();
       setSubmissions(data);
 
-      const screensRes = await authFetch(`${API_BASE_URL}/api/organizer/screens/approved/`);
+      const screensRes = await authFetch(`${API_BASE_URL}/api/organizer/screens/approved/?_t=${t}`);
       const screensData = await screensRes.json();
       setSchedulingScreens(screensData);
 
-      const approvedMoviesRes = await authFetch(`${API_BASE_URL}/api/organizer/approved-movies/`);
+      const approvedMoviesRes = await authFetch(`${API_BASE_URL}/api/organizer/approved-movies/?_t=${t}`);
       const approvedMoviesData = await approvedMoviesRes.json();
       setApprovedMovies(approvedMoviesData);
 
-      const locationsRes = await fetch(`${API_BASE_URL}/api/locations/`);
+      const locationsRes = await fetch(`${API_BASE_URL}/api/locations/?_t=${t}`);
       const locationsData = await locationsRes.json();
       setLocations(locationsData);
     } catch (err) {
@@ -314,6 +320,7 @@ const OrganizerDashboard = ({ setView }) => {
           { id: 'screen', label: 'Add Screen Layout', icon: <Layers size={16} /> },
           { id: 'movie', label: 'Add/Upload Movie', icon: <PlusCircle size={16} /> },
           { id: 'show', label: 'Schedule Screening Show', icon: <CalendarRange size={16} /> },
+          { id: 'scanner', label: 'Scan Ticket QR', icon: <ScanLine size={16} /> },
         ].map(tab => (
           <button
             key={tab.id}
@@ -605,7 +612,7 @@ const OrganizerDashboard = ({ setView }) => {
             </button>
           </form>
         </div>
-      ) : (
+      ) : activeTab === 'show' ? (
         <div style={{ maxWidth: '600px' }}>
           <h2 style={{ fontFamily: 'var(--font-title)', fontWeight: 700, fontSize: '1.5rem', marginBottom: '1.5rem' }}>
             Schedule a Show Screening
@@ -677,7 +684,39 @@ const OrganizerDashboard = ({ setView }) => {
             </form>
           )}
         </div>
-      )}
+      ) : activeTab === 'scanner' ? (
+        <div style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
+          <h2 style={{ fontFamily: 'var(--font-title)', fontWeight: 700, fontSize: '1.5rem', marginBottom: '1.5rem' }}>
+            Scan Ticket QR Code
+          </h2>
+          {!scannedBookingCode ? (
+            <div className="glass" style={{ padding: '2rem', borderRadius: '16px', border: '1px solid var(--border-color)' }}>
+              <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
+                Position the QR code within the camera frame to verify ticket validity and approve entry.
+              </p>
+              <Scanner 
+                onScanSuccess={(decodedText, resumeScan) => {
+                  let code = decodedText;
+                  if (code.includes('/verify-ticket/')) {
+                    code = code.split('/verify-ticket/')[1].replace(/\//g, '');
+                  }
+                  if (code) {
+                    setScannedBookingCode(code);
+                  }
+                }} 
+              />
+            </div>
+          ) : (
+            <div style={{ marginTop: '1rem' }}>
+              <TicketVerify 
+                bookingCode={scannedBookingCode} 
+                onClose={() => setScannedBookingCode(null)} 
+                closeText="Scan Another Ticket"
+              />
+            </div>
+          )}
+        </div>
+      ) : null}
     </div>
   );
 };

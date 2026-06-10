@@ -121,9 +121,7 @@ class SeatLockView(views.APIView):
                     # Create link
                     BookingSeat.objects.create(booking=booking, show_seat=seat)
 
-                # Schedule Celery task to release locks after 5 minutes (300 seconds)
-                # Note: using apply_async with countdown
-                release_expired_locks.apply_async((booking.id,), countdown=300)
+                # Celery is bypassed. Locks are cleaned up lazily in ShowSeatListView instead.
 
                 serializer = BookingSerializer(booking)
                 return Response({
@@ -177,8 +175,8 @@ class BookingConfirmView(views.APIView):
                     seat.locked_by = None
                     seat.save()
 
-                # Trigger Celery task to send confirmation email
-                send_ticket_email_task.delay(booking.id)
+                # Send confirmation email synchronously
+                send_ticket_email_task(booking.id)
 
                 serializer = BookingSerializer(booking)
                 return Response(serializer.data, status=status.HTTP_200_OK)
@@ -290,7 +288,7 @@ class SeatToggleLockView(views.APIView):
                             status='PENDING',
                             total_amount=0
                         )
-                        release_expired_locks.apply_async((booking.id,), countdown=300)
+                        pass
 
                     # Create BookingSeat link
                     BookingSeat.objects.get_or_create(booking=booking, show_seat=seat)
@@ -491,8 +489,8 @@ class RazorpayPaymentVerifyView(views.APIView):
                     seat.locked_by = None
                     seat.save()
                     
-                # Trigger confirmation email
-                send_ticket_email_task.delay(booking.id)
+                # Send confirmation email
+                send_ticket_email_task(booking.id)
                 
                 serializer = BookingSerializer(booking)
                 return Response(serializer.data, status=status.HTTP_200_OK)

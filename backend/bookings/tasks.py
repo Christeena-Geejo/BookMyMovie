@@ -212,7 +212,7 @@ def send_ticket_email_task(booking_id):
             pdf_content = generate_ticket_pdf(booking, show, movie, cinema, seats_str, recipient_email)
 
             from django.core.mail import EmailMessage
-            from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@bookmymovie.com')
+            from_email = settings.EMAIL_HOST_USER if hasattr(settings, 'EMAIL_HOST_USER') and settings.EMAIL_HOST_USER else getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@bookmymovie.com')
             
             email = EmailMessage(
                 subject=subject,

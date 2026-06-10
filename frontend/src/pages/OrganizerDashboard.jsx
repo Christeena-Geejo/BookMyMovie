@@ -49,8 +49,8 @@ const OrganizerDashboard = ({ setView }) => {
   const [msg, setMsg] = useState({ text: '', type: '' }); // type: 'success' | 'error'
   const [submitting, setSubmitting] = useState(false);
 
-  const fetchDashboardData = async () => {
-    setLoading(true);
+  const fetchDashboardData = async (showLoader = true) => {
+    if (showLoader) setLoading(true);
     try {
       const res = await authFetch(`${API_BASE_URL}/api/organizer/dashboard/`);
       const data = await res.json();
@@ -70,12 +70,19 @@ const OrganizerDashboard = ({ setView }) => {
     } catch (err) {
       console.error("Error loading dashboard data:", err);
     } finally {
-      setLoading(false);
+      if (showLoader) setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchDashboardData();
+    fetchDashboardData(true);
+    
+    // Auto-refresh in the background every 5 seconds to get approval updates instantly
+    const interval = setInterval(() => {
+      fetchDashboardData(false);
+    }, 5000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   const handleCinemaSubmit = async (e) => {

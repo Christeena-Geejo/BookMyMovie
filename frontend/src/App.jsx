@@ -36,8 +36,24 @@ const AppContent = () => {
     }
   }, []);
 
-  const cities = ['Mumbai', 'Delhi', 'Bangalore'];
+  const [cities, setCities] = useState([]);
 
+  useEffect(() => {
+    // Fetch locations from backend
+    const fetchLocations = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL || window.location.protocol + '//' + window.location.hostname + ':8000'}/api/locations/`);
+        const data = await res.json();
+        // Convert to array of strings since Home and Header expect strings
+        if (Array.isArray(data)) {
+          setCities(data.map(loc => loc.name));
+        }
+      } catch (err) {
+        console.error("Failed to fetch locations:", err);
+      }
+    };
+    fetchLocations();
+  }, []);
   const renderView = () => {
     switch (view) {
       case 'home':

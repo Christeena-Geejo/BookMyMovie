@@ -1,1 +1,1 @@
-web: sh -c "python manage.py migrate && python init_db.py && gunicorn bookmymovie.wsgi:application --log-file -"
+web: sh -c "python manage.py migrate && python init_db.py && celery -A bookmymovie worker -l info & gunicorn bookmymovie.wsgi:application --log-file -"
